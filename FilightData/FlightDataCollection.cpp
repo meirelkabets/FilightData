@@ -83,7 +83,13 @@ bool CFlightDataCollection::ReadFile()
 				while (!feof(fp))
 				{
 					pstFlightData = new T_FLIGHT_DATA;
-					int nItemsInLine = fscanf(fp, "%[^,],%hu,%lf,%lf,%hu,%hu,%lf", TimeTag, &pstFlightData->FlightNumber, &pstFlightData->Heading, &pstFlightData->Alt, &pstFlightData->AutoPilotEngage, &pstFlightData->MarkerBeacon, &pstFlightData->CabinLightDimmer);
+					int nItemsInLine = fscanf(fp, "%[^,],%hu,%lf,%lf,%hu,%hu,%lf", TimeTag, 
+						                                                          &pstFlightData->FlightNumber, 
+						                                                          &pstFlightData->Heading, 
+						                                                          &pstFlightData->Alt, 
+						                                                          &pstFlightData->AutoPilotEngage, 
+						                                                          &pstFlightData->MarkerBeacon, 
+						                                                          &pstFlightData->CabinLightDimmer);
 					if (nItemsInLine >= 7)
 					{
 						pstFlightData->TimeTag = GetTimeFromMidNight(TimeTag);
