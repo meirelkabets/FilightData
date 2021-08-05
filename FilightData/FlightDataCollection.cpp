@@ -74,7 +74,7 @@ bool CFlightDataCollection::ReadFile()
 		}
 		else
 		{
-			// C CODE faster ...
+			// C CODE style faster ...
 			fp = fopen(m_azFullFile, "r");
 			if (fp != NULL)
 			{
