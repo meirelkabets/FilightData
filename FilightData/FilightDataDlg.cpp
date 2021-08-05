@@ -61,6 +61,7 @@ CFilightDataDlg::CFilightDataDlg(CWnd* pParent /*=NULL*/)
 void CFilightDataDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CBCGPDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_PROGRESS1, m_pgbar);
 }
 
 BEGIN_MESSAGE_MAP(CFilightDataDlg, CBCGPDialog)

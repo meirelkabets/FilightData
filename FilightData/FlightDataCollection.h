@@ -41,18 +41,13 @@ private:
 		m_vctFilghtData.clear();
 	}
 
-	inline void CollectData(T_FLIGHT_DATA*& pstFlightData, const std::vector<std::string>& rvSplitted)
-	{		
-		pstFlightData->TimeTag = GetTimeFromMidNight(rvSplitted[0].c_str());
-		pstFlightData->FlightNumber = (unsigned short)atoi(rvSplitted[1].c_str());
-		pstFlightData->Heading = atof(rvSplitted[2].c_str());
-		pstFlightData->Alt = atof(rvSplitted[3].c_str());
-		pstFlightData->AutoPilotEngage = (unsigned short)atoi(rvSplitted[4].c_str());
-		pstFlightData->MarkerBeacon = (unsigned short)atoi(rvSplitted[5].c_str());
-		pstFlightData->CabinLightDimmer = atof(rvSplitted[6].c_str());
-
-		m_vctFilghtData.push_back(pstFlightData);		
+	inline void CollectData(T_FLIGHT_DATA*& pstFlightData)
+	{
+		m_vctFilghtData.push_back(pstFlightData);
 	}
+
+
+	void CollectData(T_FLIGHT_DATA*& pstFlightData, const std::vector<std::string>& rvSplitted);
 
 	void Finalize();
 

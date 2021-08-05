@@ -61,6 +61,7 @@ bool CFlightDataCollection::ReadFile()
 					if (textLineCSV.empty())
 						continue;
 
+					rvSplitted = Split(textLineCSV, ',');
 					if (rvSplitted.size() >= 7)
 					{
 						pstFlightData = new T_FLIGHT_DATA;
@@ -73,11 +74,24 @@ bool CFlightDataCollection::ReadFile()
 		}
 		else
 		{
-			// C CODE
+			// C CODE faster ...
 			fp = fopen(m_azFullFile, "r");
 			if (fp != NULL)
 			{
-				while (fgets(textCSVLineData, sizeof(textCSVLineData), fp) != NULL)
+				char TimeTag[32] = { 0 };
+
+				while (!feof(fp))
+				{
+					pstFlightData = new T_FLIGHT_DATA;
+					int nItems = fscanf(fp, "%[^,],%hu,%lf,%lf,%hu,%hu,%lf", TimeTag, &pstFlightData->FlightNumber, &pstFlightData->Heading, &pstFlightData->Alt, &pstFlightData->AutoPilotEngage, &pstFlightData->MarkerBeacon, &pstFlightData->CabinLightDimmer);
+					if (nItems >= 7)
+					{
+						pstFlightData->TimeTag = GetTimeFromMidNight(TimeTag);
+						CollectData(pstFlightData);
+					}
+				}
+
+				/*while (fgets(textCSVLineData, sizeof(textCSVLineData), fp) != NULL)
 				{
 					if (strlen(textCSVLineData) == 0 || (*textCSVLineData) == '\n')
 						continue;
@@ -89,12 +103,14 @@ bool CFlightDataCollection::ReadFile()
 						memset(pstFlightData, 0, sizeof(T_FLIGHT_DATA));
 						CollectData(pstFlightData, rvSplitted);
 					}					
-				}
+				}*/
 				fclose(fp);
 			}
 		}
 		auto end = chrono::steady_clock::now();
-		auto gap = chrono::duration_cast<chrono::seconds>(end - start).count();
+		auto gap = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+
+		int y = 0;
 	}
 	return false;
 }
@@ -116,14 +132,25 @@ vector<string> CFlightDataCollection::Split(std::string delimitedString, const c
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 double CFlightDataCollection::GetTimeFromMidNight(const char * auAmpolTime)
 {
-	vector<string> rvHM     = Split(auAmpolTime, ':');
-	vector<string> rvSecMil = Split(rvHM[2], ' ');
+	double         rv(0);
+	vector<string> rvHM;
+	vector<string> rvSecMil;
 
-	double rv = atof(rvHM[0].c_str())*3600.0       +
-                atof(rvHM[1].c_str())*60.0         +               
-		        atof(rvSecMil[0].c_str())          +
-                atof(rvSecMil[1].c_str()) / 1000.0 +
-                atof(rvHM[3].c_str()) / 1000000.0;
+	rvHM = Split(auAmpolTime, ':');
+
+	if (rvHM.size() >= 4)
+	{
+		rvSecMil = Split(rvHM[2], ' ');
+
+		if (rvSecMil.size() >= 2)
+		{
+			rv = atof(rvHM[0].c_str())*3600.0 +
+				 atof(rvHM[1].c_str())*60.0 +
+				 atof(rvSecMil[0].c_str()) +
+				 atof(rvSecMil[1].c_str()) / 1000.0 +
+				 atof(rvHM[3].c_str()) / 1000000.0;
+		}
+	}
 
 	return rv;
 }
@@ -142,6 +169,21 @@ int64_t CFlightDataCollection::GetTotalLines()
 		reportFile.close();
 	}	
 	return lines_count;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void CFlightDataCollection::CollectData(T_FLIGHT_DATA *& pstFlightData, 
+	                                    const std::vector<std::string>& rvSplitted)
+{
+	pstFlightData->TimeTag          = GetTimeFromMidNight(rvSplitted[0].c_str());
+	pstFlightData->FlightNumber     = (unsigned short)atoi(rvSplitted[1].c_str());
+	pstFlightData->Heading          = atof(rvSplitted[2].c_str());
+	pstFlightData->Alt              = atof(rvSplitted[3].c_str());
+	pstFlightData->AutoPilotEngage  = (unsigned short)atoi(rvSplitted[4].c_str());
+	pstFlightData->MarkerBeacon     = (unsigned short)atoi(rvSplitted[5].c_str());
+	pstFlightData->CabinLightDimmer = atof(rvSplitted[6].c_str());
+
+	m_vctFilghtData.push_back(pstFlightData);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
